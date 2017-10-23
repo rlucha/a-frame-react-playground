@@ -1,1 +1,5 @@
-# react-webpack2-minimum
+# a-frame-react-playground
+```
+npm run build -- -w
+npm run start
+```
