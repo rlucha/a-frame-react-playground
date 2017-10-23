@@ -9,6 +9,9 @@
   },
   "dependencies": {
     "aframe": "^0.7.1",
+    "aframe-animation-component": "^3.2.5",
+    "aframe-extras": "^3.12.4",
+    "aframe-particle-system-component": "^1.0.10",
     "aframe-react": "^4.3.0",
     "react": "^15.6.2",
     "react-dom": "^15.6.2"
