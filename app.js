@@ -1,4 +1,5 @@
 import 'aframe';
+import * as webvrui from 'webvr-ui';
 
 import {Entity, Scene} from 'aframe-react';
 import React from 'react';
@@ -19,24 +20,24 @@ class App extends React.Component {
 
   render () {
     return (
-      <Scene inspector="url: https://aframe.io/releases/0.3.0/aframe-inspector.min.js">
-        <Entity primitive="a-plane" position="0 -0.5 0" color="#E0586A" rotation="-90 0 0" height="100" width="100"/>
-        <Entity primitive="a-light" type="ambient" color="#445451"/>
-        <Entity primitive="a-light" type="point" intensity="2" position="2 4 4"/>
-        <Entity primitive="a-sky" height="2048" radius="30" color="#5BBDBE" theta-length="90" width="2048"/>
+        <Scene inspector="url: https://aframe.io/releases/0.3.0/aframe-inspector.min.js" webvr-ui>
+          <Entity primitive="a-plane" position="0 -0.5 0" color="#E0586A" rotation="-90 0 0" height="100" width="100"/>
+          <Entity primitive="a-light" type="ambient" color="#445451"/>
+          <Entity primitive="a-light" type="point" intensity="2" position="2 4 4"/>
+          <Entity primitive="a-sky" height="2048" radius="30" color="#5BBDBE" theta-length="90" width="2048"/>
 
-        <Entity id="box"
-          geometry={{primitive: 'box'}}
-          material={{color: '#6A616B'}}
-          position={{x: 0, y: 0, z: -3}}>
-        </Entity>
+          <Entity id="box"
+            geometry={{primitive: 'box'}}
+            material={{color: '#6A616B'}}
+            position={{x: 0, y: 0, z: -3}}>
+          </Entity>
 
-        <Box color='#300' />
+          <Box color='#300' />
 
-        <Room position={{x: 0, y: 5, z: -5}} />
-        <Room position={{x: 0, y: 5, z: -15}} />
+          <Room position={{x: 0, y: 5, z: -5}} />
+          <Room position={{x: 0, y: 5, z: -15}} />
 
-      </Scene>
+        </Scene>
     );
   }
 }
@@ -57,6 +58,9 @@ const Room = props =>
     <Entity id="left"    primitive='a-plane' width="10" height="10" color="#022f11" position="-5 0 5" rotation="0 90 0" side="double" />
     <Entity id="right"   primitive='a-plane' width="10" height="10" color="#30f300" position="5 0 5"  rotation="0 90 0" side="double" />
   </Entity>
+
+
+const enterVR = () => document.querySelector('a-scene').enterVR()
 
 // const Room = props =>
 

@@ -14,7 +14,8 @@
     "aframe-particle-system-component": "^1.0.10",
     "aframe-react": "^4.3.0",
     "react": "^15.6.2",
-    "react-dom": "^15.6.2"
+    "react-dom": "^15.6.2",
+    "webvr-ui": "^0.10.0"
   },
   "devDependencies": {
     "babel": "^6.23.0",
