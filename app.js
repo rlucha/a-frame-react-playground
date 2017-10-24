@@ -5,10 +5,6 @@ import {Entity, Scene} from 'aframe-react';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-
-
-AFrame.registerComponent('fps-look-controls', require('aframe-fps-look-component').component);
-
 const rooms = [
   {
     name: 'room1',
@@ -37,13 +33,13 @@ const rooms = [
   },
 ]
 
-const createCells = rooms =>
+const createCells = (rooms, clickHandler) =>
   rooms.map(r => Cell({
     id: r.name,
     position: {x: r.position[0] * 10, y:0, z: r.position[1] * 10},
-    description: r.description
+    description: r.description,
+    clickHandler
   }))
-
 
 class App extends React.Component {
   constructor(props) {
@@ -52,42 +48,49 @@ class App extends React.Component {
   }
 
   changeColor() {
+
     const colors = ['red', 'orange', 'yellow', 'green', 'blue'];
     this.setState({
       color: colors[Math.floor(Math.random() * colors.length)]
     });
   }
 
+  setCameraPosition(position) {
+    console.log('setCameraPosition', position);
+    // TODO setStateWith the position and redraw camera
+  }
+
+
   render () {
     return (
-        <Scene inspector="url: https://aframe.io/releases/0.3.0/aframe-inspector.min.js" webvr-ui>
+        <Scene inspector="url: https://aframe.io/releases/0.3.0/aframe-inspector.min.js" webvr-ui cursor="rayOrigin: mouse">
 
           <Entity primitive="a-plane" position="0 -0.5 0" color="#E0586A" rotation="-90 0 0" height="100" width="100"/>
           <Entity primitive="a-light" type="ambient" color="#445451"/>
           <Entity primitive="a-light" type="point" intensity="1" position="0 20 0" color="#ffe500"/>
           <Entity primitive="a-sky" height="2048" radius="30" color="#5BBDBE" theta-length="90" width="2048"/>
 
-          {createCells(rooms)}
+          {createCells(rooms, this.setCameraPosition)}
 
           <Entity id="decoratedMap" position="0 0 0">
             <Entity gltf-model="./resources/models/tree/tree.gltf" position="3 0 10 " />
           </Entity>
 
-          <Entity camera="userHeight: 1.6" active="true" wasd-controls look-controls />
+
+          <Entity camera="userHeight: 1.6" look-controls>
+            <a-cursor fuse="false" color="white"></a-cursor>
+          </Entity>
 
         </Scene>
     );
   }
 }
 
-// <Box color='#300' />
-//
-// const Box = props =>
-//   <Entity
-//     geometry={{primitive: 'box'}}
-//     material={{color: props.color}}
-//     position={{x: 0, y: 0, z: 0}}>
-//   </Entity>
+const Box = props =>
+  <Entity
+    geometry={{primitive: 'box'}}
+    material={{color: props.color}}>
+  </Entity>
 
 const Room = ({position, id}) =>
   <Entity id={id} position={position}>
@@ -99,10 +102,11 @@ const Room = ({position, id}) =>
     <Entity id="right"   primitive='a-plane' width="10" height="10" color="#30f300" position="5 0 5"  rotation="0 90 0" side="double" />
   </Entity>
 
-const Cell = ({position, id, description}) =>
+const Cell = ({position, id, description, clickHandler}) =>
   <Entity id={id} position={position} key={id}>
     <Entity id="ground"  primitive='a-plane' width="10" height="10" color="#00ff44" position="0 0 0" rotation="90 0 0" side="double" />
     <Entity id="description"  primitive='a-text' value={description} position="0 0 0" rotation="0 0 90 " />
+    <Entity id="description"  primitive='a-box' position="0 0 0" events={{click: () => clickHandler(position)}} />
   </Entity>
 
 const createDecoratedMap = () =>
