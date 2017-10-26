@@ -1,9 +1,30 @@
-import AFrame from 'aframe';
-import * as webvrui from 'webvr-ui';
+import AFrame from 'aframe'
+import * as webvrui from 'webvr-ui'
+import 'aframe-animation-component'
 
-import {Entity, Scene} from 'aframe-react';
-import React from 'react';
-import ReactDOM from 'react-dom';
+import {Entity, Scene} from 'aframe-react'
+import React from 'react'
+import ReactDOM from 'react-dom'
+
+// Image this use case scenario
+
+// Users open the inspector in the broser showin him just a plane and a sky box
+// then they open the haskell console and find that they are in a room and it is asking for a title
+// once they put the title a title tag appears in the map just in front of them...
+//
+// they can create new rooms with the commands, and they will appear in front of them / sides / whatever
+// because the backend is creating all of that in the db and passing the new app state to the client
+// via sockets
+//
+// we can explore the idea of givin the users a limited amount of resources that they can use to build
+// their island / planet / cloud, whatever and make them pay to get more stuff or more points to decorate the thing
+//
+// They can also hire NPCs, create new room descirptions, write books, etc... and make all of that available
+// read only trough an URL
+//
+// Micro games, micro worlds, created within the browser, or via console
+//
+// Get this from haskell, ideally using websockets to be able to show the updates in the map as we create rooms
 
 const rooms = [
   {
@@ -43,23 +64,30 @@ const createCells = (rooms, clickHandler) =>
 
 class App extends React.Component {
   constructor(props) {
-    super(props);
-    this.state = {color: 'red'};
+    super(props)
+    this.state = {color: 'red', cameraPosition: "0 1.6 0"}
   }
 
   changeColor() {
 
-    const colors = ['red', 'orange', 'yellow', 'green', 'blue'];
+    const colors = ['red', 'orange', 'yellow', 'green', 'blue']
     this.setState({
       color: colors[Math.floor(Math.random() * colors.length)]
-    });
+    })
   }
 
-  setCameraPosition(position) {
-    console.log('setCameraPosition', position);
-    // TODO setStateWith the position and redraw camera
+  setCameraPosition = position => {
+    console.log(position);
+    const oldCameraPosition = this.state.cameraPosition;
+    this.setState({
+      oldCameraPosition,
+      cameraPosition: makePositionString(position)
+    })
   }
 
+  // Make the camera a function that handles camera position in a fine grained way
+  // We don't want to move the camera with AnimationFrame but use aframe AnimationFrame
+  // directives to handle movement
 
   render () {
     return (
@@ -76,13 +104,10 @@ class App extends React.Component {
             <Entity gltf-model="./resources/models/tree/tree.gltf" position="3 0 10 " />
           </Entity>
 
-
-          <Entity camera="userHeight: 1.6" look-controls>
-            <a-cursor fuse="false" color="white"></a-cursor>
-          </Entity>
+          {drawCamera(this.state.oldCameraPosition, this.state.cameraPosition)}
 
         </Scene>
-    );
+    )
   }
 }
 
@@ -117,8 +142,17 @@ const createDecoratedMap = () =>
     <Entity gltf-model="#tree" />
   </Entity>
 
+// we need to make a new camera on every new position to force the animation triggering, that's the key param for
+// document.querySelector('#camera').object3D.quaternion
+const drawCamera = (oldPosition, newPosition) =>
+  <Entity id="camera" camera="userHeight: 1.6" look-controls key={Math.random()*1000}
+    animation={{property: 'position', dur: 1000, from: oldPosition, to: newPosition}}>
+    <a-cursor fuse="false" color="white"></a-cursor>
+  </Entity>
+
 const enterVR = () => document.querySelector('a-scene').enterVR()
 
-// const Room = props =>
+// change this to be able to pass a position object instead of making a string
+const makePositionString = position => `${position.x} 1.6 ${position.z}` // change 1.6 to player height
 
-ReactDOM.render(<App/>, document.querySelector('#app'));
+ReactDOM.render(<App/>, document.querySelector('#app'))
