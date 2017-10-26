@@ -6,6 +6,8 @@ import {Entity, Scene} from 'aframe-react'
 import React from 'react'
 import ReactDOM from 'react-dom'
 
+import _debounce from 'lodash.debounce'
+
 // Image this use case scenario
 
 // Users open the inspector in the broser showin him just a plane and a sky box
@@ -76,22 +78,26 @@ class App extends React.Component {
     })
   }
 
-  setCameraPosition = position => {
+  // we have to debounce this event handler or it will fire multiple times on multiclick making the animation be instantaneous
+  _setCameraPosition = _debounce(position => {
     console.log(position);
     const oldCameraPosition = this.state.cameraPosition;
     this.setState({
       oldCameraPosition,
       cameraPosition: makePositionString(position)
     })
-  }
+  }, 100)
+
+  setCameraPosition = position => this._setCameraPosition(position)
 
   // Make the camera a function that handles camera position in a fine grained way
   // We don't want to move the camera with AnimationFrame but use aframe AnimationFrame
   // directives to handle movement
 
+  // to debug set cursor="rayOrigin: mouse" on scene
   render () {
     return (
-        <Scene inspector="url: https://aframe.io/releases/0.3.0/aframe-inspector.min.js" webvr-ui cursor="rayOrigin: mouse">
+        <Scene inspector="url: https://aframe.io/releases/0.3.0/aframe-inspector.min.js" webvr-ui >
 
           <Entity primitive="a-plane" position="0 -0.5 0" color="#E0586A" rotation="-90 0 0" height="100" width="100"/>
           <Entity primitive="a-light" type="ambient" color="#445451"/>
@@ -104,7 +110,7 @@ class App extends React.Component {
             <Entity gltf-model="./resources/models/tree/tree.gltf" position="3 0 10 " />
           </Entity>
 
-          {drawCamera(this.state.oldCameraPosition, this.state.cameraPosition)}
+          <Camera oldPosition={this.state.oldCameraPosition} newPosition={this.state.cameraPosition} />
 
         </Scene>
     )
@@ -129,7 +135,7 @@ const Room = ({position, id}) =>
 
 const Cell = ({position, id, description, clickHandler}) =>
   <Entity id={id} position={position} key={id}>
-    <Entity id="ground"  primitive='a-plane' width="10" height="10" color="#00ff44" position="0 0 0" rotation="90 0 0" side="double" />
+    <Entity id="ground"  primitive='a-plane' width="10" height="10" color="#cc3344" position="0 0 0" rotation="90 0 0" side="double" />
     <Entity id="description"  primitive='a-text' value={description} position="0 0 0" rotation="0 0 90 " />
     <Entity id="description"  primitive='a-box' position="0 0 0" events={{click: () => clickHandler(position)}} />
   </Entity>
@@ -142,13 +148,19 @@ const createDecoratedMap = () =>
     <Entity gltf-model="#tree" />
   </Entity>
 
-// we need to make a new camera on every new position to force the animation triggering, that's the key param for
-// document.querySelector('#camera').object3D.quaternion
-const drawCamera = (oldPosition, newPosition) =>
-  <Entity id="camera" camera="userHeight: 1.6" look-controls key={Math.random()*1000}
-    animation={{property: 'position', dur: 1000, from: oldPosition, to: newPosition}}>
-    <a-cursor fuse="false" color="white"></a-cursor>
-  </Entity>
+
+class Camera extends React.Component {
+  componentDidUpdate() {
+    setTimeout(() => document.querySelector('#camera').emit('animationRun'), 200)
+  }
+
+  render() {
+    return(<Entity id="camera" camera="userHeight: 1.6" look-controls
+      animation={{property: 'position', dur: 1000, from: this.props.oldPosition, to: this.props.newPosition, restartEvents: ['animationRun']}}>
+      <a-cursor fuse="false" color="white"></a-cursor>
+    </Entity>)
+  }
+}
 
 const enterVR = () => document.querySelector('a-scene').enterVR()
 

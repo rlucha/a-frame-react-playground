@@ -14,6 +14,7 @@
     "aframe-fps-look-component": "^0.1.1",
     "aframe-particle-system-component": "^1.0.10",
     "aframe-react": "^4.3.0",
+    "lodash.debounce": "^4.0.8",
     "react": "^15.6.2",
     "react-dom": "^15.6.2",
     "webvr-ui": "^0.10.0"
