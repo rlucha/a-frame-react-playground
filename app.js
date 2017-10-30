@@ -8,6 +8,11 @@ import ReactDOM from 'react-dom'
 
 import _debounce from 'lodash.debounce'
 
+// TODO create a repo and move this code to it, map the Haskell bakend to JSON per area, get it from this client...
+// Draw rooms from that json. Manually create the decorated map on top of that.
+// Connect both with web sockets
+
+
 // Image this use case scenario
 
 // Users open the inspector in the broser showin him just a plane and a sky box
@@ -27,6 +32,8 @@ import _debounce from 'lodash.debounce'
 // Micro games, micro worlds, created within the browser, or via console
 //
 // Get this from haskell, ideally using websockets to be able to show the updates in the map as we create rooms
+
+// Allow navigation with N, S, W, E keys... show compass on HUD
 
 const rooms = [
   {
@@ -78,9 +85,9 @@ class App extends React.Component {
     })
   }
 
-  // we have to debounce this event handler or it will fire multiple times on multiclick making the animation be instantaneous
+  // we have to debounce this event handler or it will
+  // fire multiple times on multiclick making the animation be instantaneous
   _setCameraPosition = _debounce(position => {
-    console.log(position);
     const oldCameraPosition = this.state.cameraPosition;
     this.setState({
       oldCameraPosition,
@@ -90,29 +97,32 @@ class App extends React.Component {
 
   setCameraPosition = position => this._setCameraPosition(position)
 
-  // Make the camera a function that handles camera position in a fine grained way
-  // We don't want to move the camera with AnimationFrame but use aframe AnimationFrame
-  // directives to handle movement
-
   // to debug set cursor="rayOrigin: mouse" on scene
   render () {
     return (
-        <Scene inspector="url: https://aframe.io/releases/0.3.0/aframe-inspector.min.js" webvr-ui >
+      <div className="nm-game">
+        <div className="ng-game__terminal">
+          Welcome to the adventure
+        </div>
+        <div className="nm-game__scene">
+          <Scene inspector="url: https://aframe.io/releases/0.3.0/aframe-inspector.min.js" webvr-ui >
 
-          <Entity primitive="a-plane" position="0 -0.5 0" color="#E0586A" rotation="-90 0 0" height="100" width="100"/>
-          <Entity primitive="a-light" type="ambient" color="#445451"/>
-          <Entity primitive="a-light" type="point" intensity="1" position="0 20 0" color="#ffe500"/>
-          <Entity primitive="a-sky" height="2048" radius="30" color="#5BBDBE" theta-length="90" width="2048"/>
+            <Entity primitive="a-plane" position="0 -0.5 0" color="#E0586A" rotation="-90 0 0" height="100" width="100"/>
+            <Entity primitive="a-light" type="ambient" color="#445451"/>
+            <Entity primitive="a-light" type="point" intensity="1" position="0 20 0" color="#ffe500"/>
+            <Entity primitive="a-sky" height="2048" radius="30" color="#5BBDBE" theta-length="90" width="2048"/>
 
-          {createCells(rooms, this.setCameraPosition)}
+            {createCells(rooms, this.setCameraPosition)}
 
-          <Entity id="decoratedMap" position="0 0 0">
-            <Entity gltf-model="./resources/models/tree/tree.gltf" position="3 0 10 " />
-          </Entity>
+            <Entity id="decoratedMap" position="0 0 0">
+              <Entity gltf-model="./resources/models/tree/tree.gltf" position="3 0 10 " />
+            </Entity>
 
-          <Camera oldPosition={this.state.oldCameraPosition} newPosition={this.state.cameraPosition} />
+            <Camera oldPosition={this.state.oldCameraPosition} newPosition={this.state.cameraPosition} />
 
-        </Scene>
+          </Scene>
+        </div>
+      </div>
     )
   }
 }
@@ -149,6 +159,7 @@ const createDecoratedMap = () =>
   </Entity>
 
 
+// TODO move oldPosition to camera state instead of setting it on the app state
 class Camera extends React.Component {
   componentDidUpdate() {
     setTimeout(() => document.querySelector('#camera').emit('animationRun'), 200)

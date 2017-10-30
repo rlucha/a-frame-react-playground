@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "webpack --config webpack.config.js",
-    "start": "http-server -a 0.0.0.0 -p 9000"
+    "start": "http-server -a 0.0.0.0 -p 9000 -c 0"
   },
   "dependencies": {
     "aframe": "^0.7.1",
