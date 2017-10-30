@@ -95148,6 +95148,11 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+// TODO create a repo and move this code to it, map the Haskell bakend to JSON per area, get it from this client...
+// Draw rooms from that json. Manually create the decorated map on top of that.
+// Connect both with web sockets
+
+
 // Image this use case scenario
 
 // Users open the inspector in the broser showin him just a plane and a sky box
@@ -95223,7 +95228,19 @@ var App = function (_React$Component) {
       return _this._setCameraPosition(position);
     };
 
-    _this.state = { color: 'red', cameraPosition: "0 1.6 0" };
+    _this.drawCamera = function () {
+      if (_this.state.mode === 'editor') {
+        return _react2.default.createElement(EditorCamera, null);
+      } else {
+        return _react2.default.createElement(PlayerCamera, { oldPosition: _this.state.oldCameraPosition, newPosition: _this.state.cameraPosition });
+      }
+    };
+
+    _this.state = {
+      color: 'red',
+      cameraPosition: "0 1.6 0",
+      mode: 'editor'
+    };
     return _this;
   }
 
@@ -95270,7 +95287,7 @@ var App = function (_React$Component) {
               { id: 'decoratedMap', position: '0 0 0' },
               _react2.default.createElement(_aframeReact.Entity, { 'gltf-model': './resources/models/tree/tree.gltf', position: '3 0 10 ' })
             ),
-            _react2.default.createElement(Camera, { oldPosition: this.state.oldCameraPosition, newPosition: this.state.cameraPosition })
+            this.drawCamera()
           )
         )
       );
@@ -95318,30 +95335,33 @@ var Cell = function Cell(_ref2) {
 };
 
 var createDecoratedMap = function createDecoratedMap() {
-  return _react2.default.createElement(
-    _aframeReact.Entity,
-    { id: 'decoratedMap', position: '0 0 0' },
+  return (
+    // use magicaVoxel?
     _react2.default.createElement(
-      'a-assets',
-      null,
-      _react2.default.createElement('a-asset-item', { id: 'tree', src: './resources/models/tree.gltf' })
-    ),
-    _react2.default.createElement(_aframeReact.Entity, { 'gltf-model': '#tree' })
+      _aframeReact.Entity,
+      { id: 'decoratedMap', position: '0 0 0' },
+      _react2.default.createElement(
+        'a-assets',
+        null,
+        _react2.default.createElement('a-asset-item', { id: 'tree', src: './resources/models/tree.gltf' })
+      ),
+      _react2.default.createElement(_aframeReact.Entity, { 'gltf-model': '#tree' })
+    )
   );
 };
 
 // TODO move oldPosition to camera state instead of setting it on the app state
 
-var Camera = function (_React$Component2) {
-  _inherits(Camera, _React$Component2);
+var PlayerCamera = function (_React$Component2) {
+  _inherits(PlayerCamera, _React$Component2);
 
-  function Camera() {
-    _classCallCheck(this, Camera);
+  function PlayerCamera() {
+    _classCallCheck(this, PlayerCamera);
 
-    return _possibleConstructorReturn(this, (Camera.__proto__ || Object.getPrototypeOf(Camera)).apply(this, arguments));
+    return _possibleConstructorReturn(this, (PlayerCamera.__proto__ || Object.getPrototypeOf(PlayerCamera)).apply(this, arguments));
   }
 
-  _createClass(Camera, [{
+  _createClass(PlayerCamera, [{
     key: 'componentDidUpdate',
     value: function componentDidUpdate() {
       setTimeout(function () {
@@ -95360,8 +95380,35 @@ var Camera = function (_React$Component2) {
     }
   }]);
 
-  return Camera;
+  return PlayerCamera;
 }(_react2.default.Component);
+
+// Race condition between DOM & Three.js mounting, using timeout 0 to flush it to the end of the event queue
+
+
+var setIsometric = function setIsometric(ref) {
+  setTimeout(function () {
+    var camera = ref.el.object3DMap.camera;
+    console.log(ref.el.object3DMap);
+    camera.rotation.order = 'YXZ';
+    camera.rotation.y = -Math.PI / 4;
+    camera.rotation.x = Math.atan(-1 / Math.sqrt(2));
+    camera.position.set(-40, 50, 40);
+  }, 0);
+};
+
+var EditorCamera = function EditorCamera() {
+  return (
+    // new THREE.OrthographicCamera()
+    // $0.object3DMap.camera
+    // a.rotation.order = 'YXZ';
+    // a.rotation.y = - Math.PI / 4;
+    // a.rotation.x = Math.atan( - 1 / Math.sqrt( 2 ) );
+    // a.position.set(-40,50,40)
+
+    _react2.default.createElement(_aframeReact.Entity, { camera: true, ref: setIsometric })
+  );
+};
 
 var enterVR = function enterVR() {
   return document.querySelector('a-scene').enterVR();
@@ -95371,6 +95418,11 @@ var enterVR = function enterVR() {
 var makePositionString = function makePositionString(position) {
   return position.x + ' 1.6 ' + position.z;
 }; // change 1.6 to player height
+
+
+document.body.addEventListener('onkeydown', function (e) {
+  return console.log(e.key);
+});
 
 _reactDom2.default.render(_react2.default.createElement(App, null), document.querySelector('#app'));
 

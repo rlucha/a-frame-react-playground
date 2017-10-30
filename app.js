@@ -74,7 +74,11 @@ const createCells = (rooms, clickHandler) =>
 class App extends React.Component {
   constructor(props) {
     super(props)
-    this.state = {color: 'red', cameraPosition: "0 1.6 0"}
+    this.state = {
+      color: 'red',
+      cameraPosition: "0 1.6 0",
+      mode: 'editor'
+    }
   }
 
   changeColor() {
@@ -97,6 +101,14 @@ class App extends React.Component {
 
   setCameraPosition = position => this._setCameraPosition(position)
 
+  drawCamera = () => {
+    if (this.state.mode === 'editor') {
+      return (<EditorCamera />)
+    } else {
+      return (<PlayerCamera oldPosition={this.state.oldCameraPosition} newPosition={this.state.cameraPosition} />)
+    }
+  }
+
   // to debug set cursor="rayOrigin: mouse" on scene
   render () {
     return (
@@ -118,7 +130,7 @@ class App extends React.Component {
               <Entity gltf-model="./resources/models/tree/tree.gltf" position="3 0 10 " />
             </Entity>
 
-            <Camera oldPosition={this.state.oldCameraPosition} newPosition={this.state.cameraPosition} />
+            {this.drawCamera()}
 
           </Scene>
         </div>
@@ -151,6 +163,7 @@ const Cell = ({position, id, description, clickHandler}) =>
   </Entity>
 
 const createDecoratedMap = () =>
+ // use magicaVoxel?
   <Entity id="decoratedMap" position="0 0 0">
     <a-assets>
       <a-asset-item id="tree" src="./resources/models/tree.gltf"></a-asset-item>
@@ -160,7 +173,7 @@ const createDecoratedMap = () =>
 
 
 // TODO move oldPosition to camera state instead of setting it on the app state
-class Camera extends React.Component {
+class PlayerCamera extends React.Component {
   componentDidUpdate() {
     setTimeout(() => document.querySelector('#camera').emit('animationRun'), 200)
   }
@@ -173,9 +186,34 @@ class Camera extends React.Component {
   }
 }
 
+// Race condition between DOM & Three.js mounting, using timeout 0 to flush it to the end of the event queue
+const setIsometric = ref => {
+  setTimeout(() => {
+    const camera = ref.el.object3DMap.camera;
+    console.log(ref.el.object3DMap);
+    camera.rotation.order = 'YXZ';
+    camera.rotation.y = - Math.PI / 4;
+    camera.rotation.x = Math.atan( - 1 / Math.sqrt( 2 ) );
+    camera.position.set(-40,50,40)
+  } , 0)
+}
+
+const EditorCamera = () =>
+  // new THREE.OrthographicCamera()
+  // $0.object3DMap.camera
+  // a.rotation.order = 'YXZ';
+  // a.rotation.y = - Math.PI / 4;
+  // a.rotation.x = Math.atan( - 1 / Math.sqrt( 2 ) );
+  // a.position.set(-40,50,40)
+
+  <Entity camera ref={setIsometric}/>
+
 const enterVR = () => document.querySelector('a-scene').enterVR()
 
 // change this to be able to pass a position object instead of making a string
 const makePositionString = position => `${position.x} 1.6 ${position.z}` // change 1.6 to player height
+
+
+document.body.addEventListener('onkeydown', e => console.log(e.key))
 
 ReactDOM.render(<App/>, document.querySelector('#app'))
